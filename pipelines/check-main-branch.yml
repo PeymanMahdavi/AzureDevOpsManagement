@@ -14,16 +14,22 @@ jobs:
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   steps:
     - checkout: none
-    - script: |
+    - bash: |
+        set -euo pipefail
+        
         echo "Checking repository: ${{ parameters.repository }}"
         
+        API_URL = "$ORGANIZAION_URL$PROJECT_NAME/_apis/git/repositories/${{ parameters.repository }}?api-version=7.1-preview.1"
+        echo "API URL: $API_URL"
+
         # Get repo details from the REST API
-        response=$(curl -sS \
+        http_status=$(curl -sS -o response.json -w "%{http_code}" \
           -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
           -H "Content-Type: application/json" \
-          "$ORGANIZAION_URL$PROJECT_NAME/_apis/git/repositories/${{ parameters.repository }}?api-version=7.1-preview.1")
+          "$API_URL" || echo "000")
 
-        echo "API Response: $response | jq ."
+        echo "HTTP Status: $http_status"
+        echo "API Response: $response"
 
 env:
   SYSTEM_ACCESSTOKEN: $(System.AccessToken)
