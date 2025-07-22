@@ -1,0 +1,27 @@
+trigger: none
+
+parameters:
+  - name: repository
+    displayName: 'Azure DevOps Repository Name or ID'
+    type: string
+    default: ''
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - checkout: none
+  - script: |
+      echo "Checking repository: ${{ parameters.repository }}"
+      
+      # Get repo details from the REST API
+      response=$(curl -sS \
+        -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        -H "Content-Type: application/json" \
+        "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/${{ parameters.repository }}?api-version=7.1-preview.1")
+
+      echo "API Response: $response | jq ."
+
+    displayName: 'Get Default Branch'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
