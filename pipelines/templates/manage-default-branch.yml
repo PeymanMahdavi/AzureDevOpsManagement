@@ -29,5 +29,33 @@ jobs:
   - bash: |
       echo "Default branch for repository '${{ parameters.repository }}': $(targetBranch)"
       echo "Checking permissions for repository '${{ parameters.repository }}'..."
-      # permission checking logic
+      
+      set -euo pipefail
+
+      echo "Checking 'Force Push' permission for branch: $(targetBranch)"
+
+      NAMESPACE_ID="52d39943-cb85-4d7f-8fa8-c6baac873819"
+      SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
+      PERMISSION_BIT=2 #Force Push permission bit
+
+      response=$(curl -sS -X POST \
+      -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+      -H "Content-Type: application/json" \
+      -d "{
+            \"permissions\": [
+              {
+                \"permissionBit\": $PERMISSION_BIT,
+                \"permissionToken\": \"$SECURITY_TOKEN\",
+                \"namespaceId\": \"$NAMESPACE_ID\"
+              }
+            ]
+          }" \
+      "$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1")
+
+      echo "API Response: $RESPONSE"
+
+      ALLOWED=$(echo $RESPONSE | jq -r '.value[0].permissions')
+      echo "Permission evaluation result: $ALLOWED"
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     displayName: 'Check Repository Permissions'
