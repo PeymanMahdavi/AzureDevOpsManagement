@@ -22,7 +22,7 @@ steps:
         "$API_URL" || echo "000")
 
       echo "HTTP Status: $http_status"
-      echo "API Response: $(jq . response.json)"
+      # echo "API Response: $(jq . response.json)"
       # it does not work for other repos except the one in which the pipeline is running
 
       if [[ "$http_status" == "404" ]]; then
@@ -36,6 +36,7 @@ steps:
       echo "API call successful. Repository details retrieved."
 
       default_branch=$(jq -r '.defaultBranch' response.json)
+      default_branch=${default_branch#refs/heads/} # Remove 'refs/heads/' prefix
 
       if [[ -z "$default_branch" || "$default_branch" == "null" ]]; then
         echo "Default branch not found for repository '${{ parameters.repository }}'."
