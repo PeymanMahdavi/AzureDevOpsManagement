@@ -16,9 +16,9 @@ steps:
       echo "Checking policies for branch: $(targetBranch)"
 
       SCOPE="$(Build.Repository.ID):$(targetBranch)"
-      API_URL="${{ parameters.organizationUrl }}&{{ parameters.projectName }}/_apis/policy/configurations?scope=$SCOPE&api-version=7.1-preview.1"
+      API_URL="${{ parameters.organizationUrl }}${{ parameters.projectName }}/_apis/policy/configurations?scope=$SCOPE&api-version=7.1-preview.1"
 
-      # echo "API URL: $API_URL"
+      echo "API URL: $API_URL"
 
       http_status=$(curl -sS -o response.json -w "%{http_code}" \
         -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
