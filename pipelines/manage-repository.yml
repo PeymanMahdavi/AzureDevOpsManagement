@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  name: 'PeymanLaptopAgent
+  name: 'PeymanLaptopAgent'
 
 parameters:
   - name: repository
