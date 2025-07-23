@@ -47,10 +47,8 @@ jobs:
         -H "Content-Type: application/json" \
         "$API_URL" || echo "000")
 
-      echo "API Response: $response"
-
-      ALLOWED=$(echo $response | jq -r '.value[0].permissions')
-      echo "Permission evaluation result: $ALLOWED"
+      echo "HTTP Status: $http_status"
+      echo "API Response: $(jq . response.json)"
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     displayName: 'Check Repository Permissions'
