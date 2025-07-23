@@ -1,0 +1,13 @@
+trigger: none
+
+parameters:
+  - name: repository
+    displayName: 'Azure DevOps Repository Name or ID'
+    type: string
+    default: ''
+
+jobs:
+- template: templates/manage-default-branch.yml
+  parameters:
+    repository: ${{ parameters.repository }}
+    
