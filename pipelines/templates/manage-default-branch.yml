@@ -50,7 +50,8 @@ jobs:
       echo "HTTP Status: $http_status"
       echo "API Response: $(jq . response.json)"
       
-      deny_value=$(echo "$(response.json)" | jq '.value[0].acesDictionary | .[] | select(.displayName | contains("Project Valid Users")) | .deny')
+      deny_value=$(jq '.value[0].acesDictionary | .[] | select(.displayName | contains("Project Valid Users")) | .deny' response.json)
+
       echo "Deny Value: $deny_value"
 
       force_push_bit=16
