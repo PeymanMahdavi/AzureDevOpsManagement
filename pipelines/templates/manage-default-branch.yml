@@ -39,6 +39,8 @@ jobs:
       PERMISSION_BIT=2 #Force Push permission bit
       API_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1"
 
+      echo "API URL: $API_URL"
+
       response=$(curl -sS -X POST \
       -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
       -H "Content-Type: application/json" \
@@ -53,7 +55,6 @@ jobs:
           }" \
       API_URL)
 
-      echo "API URL: $API_URL"
       echo "API Response: $response"
 
       ALLOWED=$(echo $response | jq -r '.value[0].permissions')
