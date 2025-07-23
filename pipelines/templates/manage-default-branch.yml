@@ -14,8 +14,8 @@ jobs:
       organizationUrl: $(System.CollectionUri)
       projectName: $(System.TeamProject)
   - bash: |
-        echo "Default branch for repository '${{ parameters.repository }}' is: $(default_branch)"
-        echo "##vso[task.setvariable variable=theBranch;isOutput=true]$(default_branch)"
+        echo "Default branch for repository '${{ parameters.repository }}' is: $(defaultBranch)"
+        echo "##vso[task.setvariable variable=theBranch;isOutput=true]$(defaultBranch)"
     name: setDefaultBranch
 
 - job: CheckPermissions
