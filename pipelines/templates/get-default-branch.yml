@@ -22,7 +22,7 @@ steps:
         "$API_URL" || echo "000")
 
       echo "HTTP Status: $http_status"
-      # echo "API Response: $(jq . response.json)"
+      echo "API Response: $(jq . response.json)"
       # it does not work for other repos except the one in which the pipeline is running
 
       if [[ "$http_status" == "404" ]]; then
