@@ -5,8 +5,6 @@ parameters:
 jobs:
 - job: CheckDefaultBranch
   displayName: 'Check Default Branch'
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   steps:
   - checkout: none
@@ -23,8 +21,6 @@ jobs:
 - job: CheckPermissions
   displayName: 'Check Permissions'
   dependsOn: CheckDefaultBranch
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   variables:
     targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.theBranch'] ]
@@ -33,5 +29,37 @@ jobs:
   - bash: |
       echo "Default branch for repository '${{ parameters.repository }}': $(targetBranch)"
       echo "Checking permissions for repository '${{ parameters.repository }}'..."
-      # permission checking logic
+      
+      set -euo pipefail
+
+      echo "Checking 'Force Push' permission for branch: $(targetBranch)"
+
+      NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
+      SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
+      API_URL="$(System.CollectionUri)/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
+
+      echo "API URL: $API_URL"
+      echo "Security Token: $SECURITY_TOKEN"
+      echo "Namespace ID: $NAMESPACE_ID"
+
+      http_status=$(curl -sS -o response.json -w "%{http_code}" \
+        -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        -H "Content-Type: application/json" \
+        "$API_URL" || echo "000")
+
+      echo "HTTP Status: $http_status"
+      echo "API Response: $(jq . response.json)"
+      
+      deny_value=$(jq -r '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
+      deny_value=${deny_value:-0}
+      echo "Deny Value: $deny_value"
+
+      force_push_bit=16
+      if (( ($deny_value & $force_push_bit) == $force_push_bit )); then
+        echo "Force Push permission is denied all users."
+      else
+        echo "Force Push permission is not expelicitly denied for all users."
+      fi
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     displayName: 'Check Repository Permissions'

@@ -1,5 +1,8 @@
 trigger: none
 
+pool:
+  name: 'PeymanLaptopAgent'
+
 parameters:
   - name: repository
     displayName: 'Azure DevOps Repository Name or ID'
