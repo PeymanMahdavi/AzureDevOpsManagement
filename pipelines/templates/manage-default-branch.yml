@@ -36,10 +36,7 @@ jobs:
 
       NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
       SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
-      API_URL="$(System.CollectionUri)/_apis/accesscontrollists/$(NAMESPACE_ID)? \
-        token=${SECURITY_TOKEN}& \
-        api-version=7.1-preview.1& \
-        includeExtendedInfo=true"
+      API_URL="$(System.CollectionUri)/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
       echo "API URL: $API_URL"
       echo "Security Token: $SECURITY_TOKEN"
