@@ -50,12 +50,12 @@ jobs:
       echo "HTTP Status: $http_status"
       echo "API Response: $(jq . response.json)"
       
-      deny_value=$(jq '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
-
+      deny_value=$(jq -r '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
+      deny_value=${deny_value:-0}
       echo "Deny Value: $deny_value"
 
       force_push_bit=16
-      if [[ ($deny_value & $force_push_bit) == $force_push_bit ]]; then
+      if (( ($deny_value & $force_push_bit) == $force_push_bit )); then
         echo "Force Push permission is denied all users."
       else
         echo "Force Push permission is not expelicitly denied for all users."
