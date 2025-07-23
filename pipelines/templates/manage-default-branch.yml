@@ -37,6 +37,7 @@ jobs:
       NAMESPACE_ID="52d39943-cb85-4d7f-8fa8-c6baac873819"
       SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
       PERMISSION_BIT=2 #Force Push permission bit
+      API_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1"
 
       response=$(curl -sS -X POST \
       -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
@@ -50,8 +51,9 @@ jobs:
               }
             ]
           }" \
-      "$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1")
+      API_URL)
 
+      echo "API URL: $API_URL"
       echo "API Response: $response"
 
       ALLOWED=$(echo $response | jq -r '.value[0].permissions')
