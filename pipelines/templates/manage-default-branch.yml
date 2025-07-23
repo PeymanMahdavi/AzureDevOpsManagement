@@ -50,7 +50,7 @@ jobs:
       echo "HTTP Status: $http_status"
 
       if [[ "$http_status" == "404" ]]; then
-        echo "Repository '${{ parameters.repository }}' not found in project '${{ parameters.projectName }}'!"
+        echo "Repository '${{ parameters.repository }}' not found in project $(System.TeamProject)!"
         exit 1
       elif [[ "$http_status" != "200" ]]; then
         echo "Failed to retrieve repository permissions. HTTP Status: $http_status"
