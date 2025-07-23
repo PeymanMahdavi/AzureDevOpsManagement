@@ -94,6 +94,12 @@ steps:
       echo "deny_bypass_push: $deny_bypass_push"
 
       echo "Permissions check completed successfully."
+
+      # Export values
+      echo "##vso[task.setvariable variable=denyForcePush]$deny_force_push"
+      echo "##vso[task.setvariable variable=denyEditPolicies]$deny_edit_policies"
+      echo "##vso[task.setvariable variable=denyBypassPR]$deny_bypass_pr"
+      echo "##vso[task.setvariable variable=denyBypassPush]$deny_bypass_push"
     displayName: 'Check Repository Permissions'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
