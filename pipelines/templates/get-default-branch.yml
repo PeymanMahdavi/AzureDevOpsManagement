@@ -44,8 +44,6 @@ steps:
       fi
 
       echo "Default branch for repository '${{ parameters.repository }}': $default_branch"
-
-      echo "##vso[task.setvariable variable=defaultBranch]$default_branch"
     displayName: 'Get Default Branch'
     name: gatBranch
     env:
