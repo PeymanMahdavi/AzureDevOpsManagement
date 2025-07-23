@@ -5,8 +5,6 @@ parameters:
 jobs:
 - job: CheckDefaultBranch
   displayName: 'Check Default Branch'
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   steps:
   - checkout: none
@@ -23,8 +21,6 @@ jobs:
 - job: CheckPermissions
   displayName: 'Check Permissions'
   dependsOn: CheckDefaultBranch
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   variables:
     targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.theBranch'] ]
