@@ -32,15 +32,15 @@ jobs:
       
       set -euo pipefail
 
-      echo "Checking 'Force Push' permission for branch: $(targetBranch)"
+      echo "Checking permissions for branch: $(targetBranch)"
 
       NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
       SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
       API_URL="$(System.CollectionUri)/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
-      echo "API URL: $API_URL"
-      echo "Security Token: $SECURITY_TOKEN"
-      echo "Namespace ID: $NAMESPACE_ID"
+      # echo "API URL: $API_URL"
+      # echo "Security Token: $SECURITY_TOKEN"
+      # echo "Namespace ID: $NAMESPACE_ID"
 
       http_status=$(curl -sS -o response.json -w "%{http_code}" \
         -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
@@ -57,11 +57,11 @@ jobs:
         exit 1
       fi
 
-      echo "API Response: $(jq . response.json)"
+      # echo "API Response: $(jq . response.json)"
       
       deny_value=$(jq -r '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
       deny_value=${deny_value:-0}
-      echo "Deny Value: $deny_value"
+      # echo "Deny Value: $deny_value"
 
       # Bit values for each permission
       force_push_bit=16
