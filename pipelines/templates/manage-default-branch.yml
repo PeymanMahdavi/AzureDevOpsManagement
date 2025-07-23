@@ -52,9 +52,9 @@ jobs:
           }" \
       "$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1")
 
-      echo "API Response: $RESPONSE"
+      echo "API Response: $response"
 
-      ALLOWED=$(echo $RESPONSE | jq -r '.value[0].permissions')
+      ALLOWED=$(echo $response | jq -r '.value[0].permissions')
       echo "Permission evaluation result: $ALLOWED"
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
