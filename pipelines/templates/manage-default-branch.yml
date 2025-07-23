@@ -5,8 +5,6 @@ parameters:
 jobs:
 - job: CheckDefaultBranch
   displayName: 'Check Default Branch'
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   steps:
   - checkout: none
@@ -16,22 +14,24 @@ jobs:
       organizationUrl: $(System.CollectionUri)
       projectName: $(System.TeamProject)
   - bash: |
-        echo "Default branch for repository '${{ parameters.repository }}' is: $(defaultBranch)"
-        echo "##vso[task.setvariable variable=theBranch;isOutput=true]$(defaultBranch)"
-    name: setDefaultBranch
+        echo "##vso[task.setvariable variable=defaultBranch;isOutput=true]$(defaultBranch)"
+    name: SetDefaultBranch
 
 - job: CheckPermissions
   displayName: 'Check Permissions'
   dependsOn: CheckDefaultBranch
-  pool:
-    vmImage: 'ubuntu-latest'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   variables:
-    targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.theBranch'] ]
+    targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.defaultBranch'] ]
   steps:
   - checkout: none
+  - template: get-branch-permissions.yml
+    parameters:
+      repository: ${{ parameters.repository }}
+      projectName: $(System.TeamProject)
   - bash: |
-      echo "Default branch for repository '${{ parameters.repository }}': $(targetBranch)"
-      echo "Checking permissions for repository '${{ parameters.repository }}'..."
-      # permission checking logic
-    displayName: 'Check Repository Permissions'
+        echo "##vso[task.setvariable variable=denyForcePush;isOutput=true]$denyForcePush"
+        echo "##vso[task.setvariable variable=denyEditPolicies;isOutput=true]$denyEditPolicies"
+        echo "##vso[task.setvariable variable=denyBypassPR;isOutput=true]$denyBypassPR"
+        echo "##vso[task.setvariable variable=denyBypassPush;isOutput=true]$denyBypassPush"
+    name: SetBranchPermissionsStatus
