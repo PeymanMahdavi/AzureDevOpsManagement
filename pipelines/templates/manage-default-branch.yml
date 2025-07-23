@@ -49,6 +49,16 @@ jobs:
 
       echo "HTTP Status: $http_status"
       echo "API Response: $(jq . response.json)"
+      
+      deny_value=$(echo "response.json" | jq '.value[0].acesDictionary | .[] | select(.displayName | contains("Project Valid Users")) | .deny')
+      echo "Deny Value: $deny_value"
+
+      force_push_bit=16
+      if [[ ($deny_value & $force_push_bit) == $force_push_bit ]]; then
+        echo "Force Push permission is denied all users."
+      else
+        echo "Force Push permission is not expelicitly denied for all users."
+      fi
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     displayName: 'Check Repository Permissions'
