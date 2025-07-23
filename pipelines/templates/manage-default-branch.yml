@@ -34,29 +34,21 @@ jobs:
 
       echo "Checking 'Force Push' permission for branch: $(targetBranch)"
 
-      NAMESPACE_ID="52d39943-cb85-4d7f-8fa8-c6baac873819"
+      NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
       SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
-      PERMISSION_BIT=2 #Force Push permission bit
-      API_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/security/permissionevaluations?api-version=7.1-preview.1"
+      API_URL="$(System.CollectionUri)/_apis/accesscontrollists/$(NAMESPACE_ID)? \
+        token=${SECURITY_TOKEN}& \
+        api-version=7.1-preview.1& \
+        includeExtendedInfo=true"
 
       echo "API URL: $API_URL"
       echo "Security Token: $SECURITY_TOKEN"
-      echo "Permission Bit: $PERMISSION_BIT"
       echo "Namespace ID: $NAMESPACE_ID"
 
-      response=$(curl -sS -X POST \
-      -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
-      -H "Content-Type: application/json" \
-      -d "{
-            \"permissions\": [
-              {
-                \"permissionBit\": $PERMISSION_BIT,
-                \"permissionToken\": \"$SECURITY_TOKEN\",
-                \"namespaceId\": \"$NAMESPACE_ID\"
-              }
-            ]
-          }" \
-      API_URL)
+      http_status=$(curl -sS -o response.json -w "%{http_code}" \
+        -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        -H "Content-Type: application/json" \
+        "$API_URL" || echo "000")
 
       echo "API Response: $response"
 
