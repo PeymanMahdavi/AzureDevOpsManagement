@@ -44,7 +44,7 @@ steps:
       echo "Minimum approvers: ${min_approvers:-Not set}"
       echo "Reset votes on source push: ${reset_votes:-Not set}"
 
-      echo "Branch policies for repository '${{ parameters.repository }}': $branch_policies"
+      echo "Branch policies for repository '${{ parameters.repository }}': $filtered_policies"
 
     displayName: 'Check Repository policies'
     env:
