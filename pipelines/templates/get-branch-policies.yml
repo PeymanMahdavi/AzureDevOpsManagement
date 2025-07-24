@@ -37,7 +37,7 @@ steps:
 
       echo "API Response: $(jq . response.json)"
       
-      filtered_policies=$(jq --arg branch "$targetBranch" --arg repoId "$(Build.Repository.ID)" '.value[]| select((.settings.scope // [] | type == "array")and (.settings.scope[]? | select(.refName == $branch and .repositoryId == $repoId)))' response.json)
+      filtered_policies=$(jq --arg branch "$(targetBranch)" --arg repoId "$(Build.Repository.ID)" '.value[]| select((.settings.scope // [] | type == "array")and (.settings.scope[]? | select(.refName == $branch and .repositoryId == $repoId)))' response.json)
       min_approvers=$(echo "$filtered_policies" | jq '.settings.minimumApproverCount // empty')
       reset_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // empty')
 
