@@ -16,7 +16,7 @@ steps:
       echo "Checking policies for branch: $(targetBranch)"
 
       SCOPE="$(Build.Repository.ID):$(targetBranch)"
-      API_URL="${{ parameters.organizationUrl }}$(System.TeamProjectId)/_apis/policy/configurations?scope=$SCOPE&api-version=7.1-preview.1"
+      API_URL="${{ parameters.organizationUrl }}$(System.TeamProjectId)/_apis/policy/configurations?api-version=7.1-preview.1"
 
       echo "API URL: $API_URL"
 
