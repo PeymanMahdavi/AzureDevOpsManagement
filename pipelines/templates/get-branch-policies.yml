@@ -37,7 +37,10 @@ steps:
 
       echo "API Response: $(jq . response.json)"
       
-      
+      branch_policies=$(jq -r '.value[] | select(.settings.scopes[0].refName == "refs/heads/main") | .settings.scopes[0] | "\(.repositoryId):\(.refName)"')
+
+      echo "Branch policies for repository '${{ parameters.repository }}': $branch_policies"
+
     displayName: 'Check Repository policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
