@@ -37,7 +37,7 @@ steps:
 
       echo "API Response: $(jq . response.json)"
       
-      branch_policies=$(jq -r '.value[] | select(.settings.scopes[0].refName == "refs/heads/main") | .settings.scopes[0] | "\(.repositoryId):\(.refName)"')
+      branch_policies=$(jq -r ' .value[] | select(.settings.scopes[] | select(.refName == "refs/heads/main")) | { id, type: .type.displayName, repositoryId: .settings.scopes[0].repositoryId, refName: .settings.scopes[0].refName }' response.json)
 
       echo "Branch policies for repository '${{ parameters.repository }}': $branch_policies"
 
