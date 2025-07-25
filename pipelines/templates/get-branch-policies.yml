@@ -22,10 +22,10 @@ steps:
       # echo "HTTP Status: $http_status"
 
       if [[ "$http_status" == "404" ]]; then
-        echo "Repository '${{ parameters.repository }}' not found in project ${{ parameters.projectName }}!"
+        echo "❌ Repository '${{ parameters.repository }}' not found in project ${{ parameters.projectName }}!"
         exit 1
       elif [[ "$http_status" != "200" ]]; then
-        echo "Failed to retrieve repository policies. HTTP Status: $http_status"
+        echo "❌ Failed to retrieve repository policies. HTTP Status: $http_status"
         exit 1
       fi
       # echo "API Response: $(jq . response.json)"
