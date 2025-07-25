@@ -8,10 +8,13 @@ parameters:
 
 steps:
   - bash: |
-      # I know there is a problem with the securoty token, ans i may fix it with a PAT, but I am running out of time.
+      # I know there is a problem with the security token, ans i may fix it with a PAT, but I am running out of time.
       set -euo pipefail
 
-      if [[ "$(isPolicyEnabled)" == "true" && "$(resetApproveVotesPolicy)" == "true" && "$(resetRejectVotesPolicy)" == "false" ]] && [[ "$(minimumApproversPolicy)" -eq 2 ]]; then
+      if [[ "$(isPolicyEnabled)" == "true" && \
+            -n "$(minimumApproversPolicy)" && "$(minimumApproversPolicy)" -eq 2 && \
+            "$(resetApproveVotesPolicy)" == "true" && \
+            "$(resetRejectVotesPolicy)" == "false" ]]; then
         echo "✅ All required branch policies are already set. Skipping policy update."
         exit 0
       fi
