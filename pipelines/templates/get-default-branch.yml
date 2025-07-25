@@ -12,8 +12,9 @@ steps:
 
       echo "Checking repository: ${{ parameters.repository }}"
       
+      # === API Call ===
       API_URL="${{ parameters.organizationUrl }}${{ parameters.projectName }}/_apis/git/repositories/${{ parameters.repository }}?api-version=7.1-preview.1"
-      echo "API URL: $API_URL"
+      # echo "API URL: $API_URL"
 
       # Get repo details from the REST API
       http_status=$(curl -sS -o response.json -w "%{http_code}" \
@@ -21,30 +22,33 @@ steps:
         -H "Content-Type: application/json" \
         "$API_URL" || echo "000")
 
-      echo "HTTP Status: $http_status"
+      # echo "HTTP Status: $http_status"
       # echo "API Response: $(jq . response.json)"
       # it does not work for other repos except the one in which the pipeline is running
 
       if [[ "$http_status" == "404" ]]; then
-        echo "Repository '${{ parameters.repository }}' not found in project '${{ parameters.projectName }}'!"
+        echo "❌ Repository '${{ parameters.repository }}' not found in project '${{ parameters.projectName }}'!"
         exit 1
       elif [[ "$http_status" != "200" ]]; then
-        echo "Failed to retrieve repository details. HTTP Status: $http_status"
+        echo "❌ Failed to retrieve repository details. HTTP Status: $http_status"
         exit 1
       fi
 
-      echo "API call successful. Repository details retrieved."
-
+      # === Extract brnach name from API response ===
       default_branch=$(jq -r '.defaultBranch' response.json)
       default_branch=${default_branch#refs/heads/} # Remove 'refs/heads/' prefix
 
+      # === Display result ===
       if [[ -z "$default_branch" || "$default_branch" == "null" ]]; then
-        echo "Default branch not found for repository '${{ parameters.repository }}'."
+        echo "❌ Default branch not found for repository '${{ parameters.repository }}'."
         exit 1
       fi
 
-      echo "Default branch for repository '${{ parameters.repository }}': $default_branch"
+      echo "+----------------------------------------------+"
+      echo "✅ Default branch for repository '${{ parameters.repository }}': $default_branch"
+      echo "+----------------------------------------------+"
 
+      # === Export values ===
       echo "##vso[task.setvariable variable=defaultBranch]$default_branch"
     displayName: 'Get Default Branch'
     name: gatBranch
