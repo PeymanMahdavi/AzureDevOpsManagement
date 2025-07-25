@@ -8,24 +8,18 @@ parameters:
 
 steps:
   - bash: |
-      echo "Default branch for repository '${{ parameters.repository }}': $(targetBranch)"
-      echo "Checking policies for repository '${{ parameters.repository }}'..."
-      
       set -euo pipefail
 
-      echo "Checking policies for branch: $(targetBranch)"
-
-      SCOPE="$(Build.Repository.ID):$(targetBranch)"
-      API_URL="${{ parameters.organizationUrl }}${{ parameters.projectName }}/_apis/policy/configurations?scope=$SCOPE&api-version=7.1-preview.1"
-
-      echo "API URL: $API_URL"
-
+      echo "Checking policies for repository '${{ parameters.repository }}', branch: $(targetBranch) ..."
+      
+      # === API Call ===
+      API_URL="${{ parameters.organizationUrl }}$(System.TeamProjectId)/_apis/policy/configurations?api-version=7.1-preview.1"
+      # echo "API URL: $API_URL"
       http_status=$(curl -sS -o response.json -w "%{http_code}" \
         -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
         -H "Content-Type: application/json" \
         "$API_URL" || echo "000")
-
-      echo "HTTP Status: $http_status"
+      # echo "HTTP Status: $http_status"
 
       if [[ "$http_status" == "404" ]]; then
         echo "Repository '${{ parameters.repository }}' not found in project ${{ parameters.projectName }}!"
@@ -34,10 +28,50 @@ steps:
         echo "Failed to retrieve repository policies. HTTP Status: $http_status"
         exit 1
       fi
+      # echo "API Response: $(jq . response.json)"
+      
+      # === Filter policies for the target branch ===
+      # echo "Repository id: $(Build.Repository.ID)"
+      filtered_policies=$(jq --arg branch "refs/heads/$(targetBranch)" --arg repoId "$(Build.Repository.ID)" '.value[] | select((.settings.scope // [] | type == "array") and (.settings.scope[]? | select(.refName == $branch and .repositoryId == $repoId)))' response.json)
+      # echo "Branch policies for repository '${{ parameters.repository }}': $filtered_policies"
 
-      echo "API Response: $(jq . response.json)"
-      
-      
+      is_enable=$(echo "$filtered_policies" | jq '.isEnabled // false')
+      is_blocking=$(echo "$filtered_policies" | jq '.isBlocking // false')
+      min_approvers=$(echo "$filtered_policies" | jq '.settings.minimumApproverCount // 0')
+      reset_approve_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // false')
+      reset_reject_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // false')
+
+      # === Display policy settings ===
+      echo "isEnabled: ${is_enable}" 
+      [[ "$is_enable" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "isBlocking: ${is_blocking}" 
+      [[ "$is_blocking" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Minimum approvers: ${min_approvers}" 
+      [[ -n "$min_approvers" && "$min_approvers" -eq 2 ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Reset approve votes on source push: ${reset_approve_votes}" 
+      [[ "$reset_approve_votes" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Reset reject votes on source push: ${reset_reject_votes}" 
+      [[ "$reset_reject_votes" == "false" ]] && echo "✅ Match" || echo "❌ No match"
+
+      # === Final combined check ===
+      echo "+----------------------------------------------+"
+      if [[ "$is_enable" == "true" && \
+        "$is_blocking" == "true" && \
+        -n "$min_approvers" && "$min_approvers" -eq 2 && \
+        "$reset_approve_votes" == "true" && \
+        "$reset_reject_votes" == "false" ]]; then
+          echo "🎯 Final Check: ✅ All policy settings are correctly configured."
+      else
+        echo "🚨 Final Check: ❌ One or more policy settings are incorrect."
+      fi
+      echo "+----------------------------------------------+"
+
+      # === Export values ===
+      echo "##vso[task.setvariable variable=isPolicyEnabled]$is_enable"
+      echo "##vso[task.setvariable variable=isPolicyBlocking]$is_blocking"
+      echo "##vso[task.setvariable variable=minimumApproversPolicy]$min_approvers"
+      echo "##vso[task.setvariable variable=resetApproveVotesPolicy]$reset_approve_votes"
+      echo "##vso[task.setvariable variable=resetRejectVotesPolicy]$reset_reject_votes"
     displayName: 'Check Repository policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
