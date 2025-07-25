@@ -35,21 +35,25 @@ steps:
         exit 1
       fi
 
-      echo "API Response: $(jq . response.json)"
+      # echo "API Response: $(jq . response.json)"
       
+      echo "Repository id: $(Build.Repository.ID)"
       filtered_policies=$(jq --arg branch "refs/heads/$(targetBranch)" --arg repoId "$(Build.Repository.ID)" '.value[] | select((.settings.scope // [] | type == "array") and (.settings.scope[]? | select(.refName == $branch and .repositoryId == $repoId)))' response.json)
+      echo "Branch policies for repository '${{ parameters.repository }}': $filtered_policies"
+
       is_enable=$(echo "$filtered_policies" | jq '.isEnabled // empty')
       is_blocking=$(echo "$filtered_policies" | jq '.isBlocking // empty')
       min_approvers=$(echo "$filtered_policies" | jq '.settings.minimumApproverCount // empty')
-      reset_positive_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // empty')
-      reset_negative_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // empty')
+      reset_approve_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // empty')
+      reset_reject_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // empty')
 
-      echo "Repository id: $(Build.Repository.ID)"
+      echo "isEnabled: ${is_enable:-Not set}"
+      echo "isBlocking: ${is_blocking:-Not set}"
       echo "Minimum approvers: ${min_approvers:-Not set}"
-      echo "Reset votes on source push: ${reset_votes:-Not set}"
+      echo "Reset approve votes on source push: ${reset_approve_votes:-Not set}"
+      echo "Reset reject votes on source push: ${reset_reject_votes:-Not set}"
 
-      echo "Branch policies for repository '${{ parameters.repository }}': $filtered_policies"
-
+      
     displayName: 'Check Repository policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
