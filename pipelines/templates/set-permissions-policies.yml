@@ -40,7 +40,7 @@ steps:
 
       GIT_NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
       BRANCH_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
-      SET_PERMISSIONS_API_URL="${{ parameters.organizationUrl }}${{ parameters.projectName }}/_apis/accesscontrollists/$GIT_NAMESPACE_ID?api-version=7.1-preview.1"
+      SET_PERMISSIONS_API_URL="${{ parameters.organizationUrl }}/_apis/accesscontrollists/$GIT_NAMESPACE_ID?api-version=7.1-preview.1"
 
       echo "API URL: $SET_PERMISSIONS_API_URL"
       echo "Security Token: $BRANCH_TOKEN"
