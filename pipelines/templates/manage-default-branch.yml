@@ -81,12 +81,3 @@ jobs:
       repository: ${{ parameters.repository }}
       organizationUrl: $(System.CollectionUri)
       projectName: $(System.TeamProject)
-      targetBranch: ${{ variables.targetBranch }}
-      denyForcePushPermission: ${{ variables.denyForcePushPermission }}
-      denyEditPoliciesPermission: ${{ variables.denyEditPoliciesPermission }}
-      denyBypassPRPermission: ${{ variables.denyBypassPRPermission }}
-      denyBypassPushPermission: ${{ variables.denyBypassPushPermission }}
-      isPolicyEnabled: ${{ variables.isPolicyEnabled }}
-      minimumApproversPolicy: ${{ variables.minimumApproversPolicy }}
-      resetApproveVotesPolicy: ${{ variables.resetApproveVotesPolicy }}
-      resetRejectVotesPolicy: ${{ variables.resetRejectVotesPolicy }}

@@ -5,34 +5,16 @@ parameters:
     type: string
   - name: projectName
     type: string
-  - name: targetBranch
-    type: string
-  - name: denyForcePushPermission
-    type: string
-  - name: denyEditPoliciesPermission
-    type: string
-  - name: denyBypassPRPermission
-    type: string
-  - name: denyBypassPushPermission
-    type: string
-  - name: isPolicyEnabled
-    type: string
-  - name: minimumApproversPolicy
-    type: string
-  - name: resetApproveVotesPolicy
-    type: string
-  - name: resetRejectVotesPolicy
-    type: string
 
 steps:
   - bash: |
       set -euo pipefail
 
-      echo "Setting permissions and policies for repository: ${{ parameters.repository }} on branch: ${{ parameters.targetBranch }}"
+      echo "Setting permissions and policies for repository: ${{ parameters.repository }} on branch: $(targetBranch)"
 
       # === API Call - Find valid users ===
       org_name=$(echo "${{ parameters.organizationUrl }}" | awk -F '/' '{print $(NF-1)}')
-      PROJECT_VALID_USERS_DESCRIPTOR=$(curl -sL -u ":$(System.AccessToken)" "https://vssps.dev.azure.com/$org_name/_apis/graph/descriptors/$(System.TeamProjectId)" | jq -r '.value')
+      PROJECT_VALID_USERS_DESCRIPTOR=$(curl -sL -u ":$SYSTEM_ACCESSTOKEN" "https://vssps.dev.azure.com/$org_name/_apis/graph/descriptors/$(System.TeamProjectId)" | jq -r '.value')
       echo "Project Valid Users Descriptor: $PROJECT_VALID_USERS_DESCRIPTOR"
 
       if [[ -z "$PROJECT_VALID_USERS_DESCRIPTOR" || "$PROJECT_VALID_USERS_DESCRIPTOR" == "null" ]]; then
@@ -48,12 +30,12 @@ steps:
       combined_permissions=$(( force_push_bit | edit_policies_bit | bypass_pull_request_policies_bit | bypass_pushing_policies_bit ))
 
       GIT_NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
-      BRANCH_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/${{ parameters.targetBranch }}"
+      BRANCH_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
 
       # === API Call - Set permissions ===
       curl -sL \
         -X POST \
-        -u ":${PAT}" \
+        -u ":$SYSTEM_ACCESSTOKEN" \
         --header "Content-Type: application/json" \
         "${{ parameters.organizationUrl }}/_apis/accesscontrollists/$GIT_NAMESPACE_ID?api-version=7.1-preview.1" \
         -d '{
