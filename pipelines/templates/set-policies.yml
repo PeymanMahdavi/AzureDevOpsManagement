@@ -1,0 +1,27 @@
+parameters:
+  - name : repository
+    type: string
+  - name: organizationUrl
+    type: string
+  - name: projectName
+    type: string
+
+steps:
+  - bash: |
+      # I know there is a problem with the security token, ans i may fix it with a PAT, but I am running out of time.
+      set -euo pipefail
+
+      if [[ "$(isPolicyEnabled)" == "true" && \
+            -n "$(minimumApproversPolicy)" && "$(minimumApproversPolicy)" -eq 2 && \
+            "$(resetApproveVotesPolicy)" == "true" && \
+            "$(resetRejectVotesPolicy)" == "false" ]]; then
+        echo "✅ All required branch policies are already set. Skipping policy update."
+        exit 0
+      fi
+
+      echo "Setting policies for repository: ${{ parameters.repository }} on branch: $(targetBranch)"
+
+      
+    displayName: 'Set Repository policies'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)

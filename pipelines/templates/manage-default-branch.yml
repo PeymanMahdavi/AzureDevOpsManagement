@@ -57,7 +57,7 @@ jobs:
         echo "##vso[task.setvariable variable=resetRejectVotesPolicy;isOutput=true]$resetRejectVotesPolicy"
     name: SetBranchPliciesStatus
   
-- job: SetNeededPermissions&Policies
+- job: SetNeededPermissionsPolicies
   displayName: 'Set Needed Permissions and Policies'
   dependsOn: 
     - CheckDefaultBranch
@@ -76,17 +76,13 @@ jobs:
     resetRejectVotesPolicy: $[ dependencies.CheckPolicies.outputs['SetBranchPliciesStatus.resetRejectVotesPolicy'] ]
   steps:
   - checkout: none
-  - template: set-permissions-policies.yml
+  - template: set-permissions.yml
     parameters:
       repository: ${{ parameters.repository }}
       organizationUrl: $(System.CollectionUri)
       projectName: $(System.TeamProject)
-      targetBranch: ${{ variables.targetBranch }}
-      denyForcePushPermission: ${{ variables.denyForcePushPermission }}
-      denyEditPoliciesPermission: ${{ variables.denyEditPoliciesPermission }}
-      denyBypassPRPermission: ${{ variables.denyBypassPRPermission }}
-      denyBypassPushPermission: ${{ variables.denyBypassPushPermission }}
-      isPolicyEnabled: ${{ variables.isPolicyEnabled }}
-      minimumApproversPolicy: ${{ variables.minimumApproversPolicy }}
-      resetApproveVotesPolicy: ${{ variables.resetApproveVotesPolicy }}
-      resetRejectVotesPolicy: ${{ variables.resetRejectVotesPolicy }}
+  - template: set-policies.yml
+    parameters:
+      repository: ${{ parameters.repository }}
+      organizationUrl: $(System.CollectionUri)
+      projectName: $(System.TeamProject)

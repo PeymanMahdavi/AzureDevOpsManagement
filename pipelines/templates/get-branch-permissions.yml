@@ -18,7 +18,7 @@ steps:
       API_URL="${{ parameters.organizationUrl }}/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
       # echo "API URL: $API_URL"
-      # echo "Security Token: $SECURITY_TOKEN"
+      echo "Security Token: $SECURITY_TOKEN"
       # echo "Namespace ID: $NAMESPACE_ID"
 
       http_status=$(curl -sS -o response.json -w "%{http_code}" \
