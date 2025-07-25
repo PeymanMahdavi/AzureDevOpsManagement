@@ -35,8 +35,8 @@ steps:
       # === API Call - Set permissions ===
       curl -sL \
         -X POST \
-        -u ":$SYSTEM_ACCESSTOKEN" \
-        --header "Content-Type: application/json" \
+        -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        -H "Content-Type: application/json" \
         "${{ parameters.organizationUrl }}/_apis/accesscontrollists/$GIT_NAMESPACE_ID?api-version=7.1-preview.1" \
         -d '{
           "value": [
