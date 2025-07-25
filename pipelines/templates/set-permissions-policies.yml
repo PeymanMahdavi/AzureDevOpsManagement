@@ -51,7 +51,7 @@ steps:
         -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
         -H "Content-Type: application/json" \
         "$SET_PERMISSIONS_API_URL" \
-        -d $(updated.json)
+        -d "@updated.json"
     displayName: 'Set Repository permissions & policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
