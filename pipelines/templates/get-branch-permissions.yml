@@ -93,9 +93,9 @@ steps:
             "$deny_edit_policies" == "true" && \
             "$deny_bypass_pr" == "true" && \
             "$deny_bypass_push" == "true" ]]; then
-        echo "✅ All required branch permissions are properly denied."
+        echo "🎯 Final Check: ✅ All required branch permissions are properly denied."
       else
-        echo "❌ One or more required branch permissions are NOT properly denied."
+        echo "🚨 Final Check: ❌ One or more required branch permissions are NOT properly denied."
       fi
       echo "+----------------------------------------------+"
 
