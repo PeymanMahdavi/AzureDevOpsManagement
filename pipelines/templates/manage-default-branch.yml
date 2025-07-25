@@ -28,6 +28,7 @@ jobs:
   - template: get-branch-permissions.yml
     parameters:
       repository: ${{ parameters.repository }}
+      organizationUrl: $(System.CollectionUri)
       projectName: $(System.TeamProject)
   - bash: |
         echo "##vso[task.setvariable variable=denyForcePush;isOutput=true]$denyForcePush"
@@ -35,3 +36,23 @@ jobs:
         echo "##vso[task.setvariable variable=denyBypassPR;isOutput=true]$denyBypassPR"
         echo "##vso[task.setvariable variable=denyBypassPush;isOutput=true]$denyBypassPush"
     name: SetBranchPermissionsStatus
+
+- job: CheckPolicies
+  displayName: 'Check Policies'
+  dependsOn: CheckDefaultBranch
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+  variables:
+    targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.defaultBranch'] ]
+  steps:
+  - checkout: none
+  - template: get-branch-policies.yml
+    parameters:
+      repository: ${{ parameters.repository }}
+      organizationUrl: $(System.CollectionUri)
+      projectName: $(System.TeamProject)
+  - bash: |
+        echo "##vso[task.setvariable variable=isPolicyEnabled;isOutput=true]$isPolicyEnabled"
+        echo "##vso[task.setvariable variable=minimumApproversPolicy;isOutput=true]$minimumApproversPolicy"
+        echo "##vso[task.setvariable variable=resetApproveVotesPolicy;isOutput=true]$resetApproveVotesPolicy"
+        echo "##vso[task.setvariable variable=resetRejectVotesPolicy;isOutput=true]$resetRejectVotesPolicy"
+    name: SetBranchPliciesStatus
