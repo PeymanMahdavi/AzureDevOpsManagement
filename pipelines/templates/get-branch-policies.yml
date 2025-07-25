@@ -41,11 +41,11 @@ steps:
       filtered_policies=$(jq --arg branch "refs/heads/$(targetBranch)" --arg repoId "$(Build.Repository.ID)" '.value[] | select((.settings.scope // [] | type == "array") and (.settings.scope[]? | select(.refName == $branch and .repositoryId == $repoId)))' response.json)
       echo "Branch policies for repository '${{ parameters.repository }}': $filtered_policies"
 
-      is_enable=$(echo "$filtered_policies" | jq '.isEnabled // empty')
-      is_blocking=$(echo "$filtered_policies" | jq '.isBlocking // empty')
-      min_approvers=$(echo "$filtered_policies" | jq '.settings.minimumApproverCount // empty')
-      reset_approve_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // empty')
-      reset_reject_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // empty')
+      is_enable=$(echo "$filtered_policies" | jq '.isEnabled // false')
+      is_blocking=$(echo "$filtered_policies" | jq '.isBlocking // false')
+      min_approvers=$(echo "$filtered_policies" | jq '.settings.minimumApproverCount // 0')
+      reset_approve_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // false')
+      reset_reject_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // false')
 
       echo "isEnabled: ${is_enable}" 
       [[ "$is_enable" == "true" ]] && echo "✅ Match" || echo "❌ No match"
