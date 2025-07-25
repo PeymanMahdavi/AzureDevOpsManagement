@@ -13,14 +13,18 @@ steps:
       echo "Setting permissions and policies for repository: ${{ parameters.repository }} on branch: $(targetBranch)"
 
       # === API Call - Find valid users ===
-      org_name=$(echo "${{ parameters.organizationUrl }}" | awk -F '/' '{print $(NF-1)}')
-      PROJECT_VALID_USERS_DESCRIPTOR=$(curl -sL -u ":$SYSTEM_ACCESSTOKEN" "https://vssps.dev.azure.com/$org_name/_apis/graph/descriptors/$(System.TeamProjectId)" | jq -r '.value')
-      echo "Project Valid Users Descriptor: $PROJECT_VALID_USERS_DESCRIPTOR"
+      NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87" # Namespace ID for Git repositories
+      SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
+      API_URL="${{ parameters.organizationUrl }}/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
-      if [[ -z "$PROJECT_VALID_USERS_DESCRIPTOR" || "$PROJECT_VALID_USERS_DESCRIPTOR" == "null" ]]; then
-        echo "❌ ERROR: Failed to find Project Valid Users group descriptor."
-        exit 1
-      fi
+      # echo "API URL: $API_URL"
+      echo "Security Token: $SECURITY_TOKEN"
+      # echo "Namespace ID: $NAMESPACE_ID"
+
+      http_status=$(curl -sS -o response.json -w "%{http_code}" \
+        -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
+        -H "Content-Type: application/json" \
+        "$API_URL" || echo "000")
 
       # === Bit values for each permission ===
       force_push_bit=16
@@ -28,6 +32,11 @@ steps:
       bypass_pull_request_policies_bit=1024
       bypass_pushing_policies_bit=2048
       combined_permissions=$(( force_push_bit | edit_policies_bit | bypass_pull_request_policies_bit | bypass_pushing_policies_bit ))
+
+      jq '.value[0].acesDictionary |= with_entries(.value.deny = $combined_permissions)' response.json > updated.json
+
+      echo "API Response: $(jq . response.json)"
+      echo "API Response: $(jq . updated.json)"
 
       GIT_NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
       BRANCH_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
@@ -42,17 +51,7 @@ steps:
         -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" \
         -H "Content-Type: application/json" \
         "$SET_PERMISSIONS_API_URL" \
-        -d "{
-          \"value\": [
-            {
-              \"descriptor\": \"$PROJECT_VALID_USERS_DESCRIPTOR\",
-              \"allow\": 0,
-              \"deny\": $combined_permissions
-            }
-          ],
-          \"token\": \"$BRANCH_TOKEN\",
-          \"merge\": true
-        }"
+        -d $(updated.json)
     displayName: 'Set Repository permissions & policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
