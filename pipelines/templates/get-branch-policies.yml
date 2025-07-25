@@ -56,11 +56,11 @@ steps:
       # === Final combined check ===
       echo "+----------------------------------------------+"
       if [[ "$is_enable" == "true" && \
-        "$is_blocking" == "true" && \
-        -n "$min_approvers" && "$min_approvers" -eq 2 && \
-        "$reset_approve_votes" == "true" && \
-        "$reset_reject_votes" == "false" ]]; then
-          echo "🎯 Final Check: ✅ All policy settings are correctly configured."
+            "$is_blocking" == "true" && \
+            -n "$min_approvers" && "$min_approvers" -eq 2 && \
+            "$reset_approve_votes" == "true" && \
+            "$reset_reject_votes" == "false" ]]; then
+        echo "🎯 Final Check: ✅ All policy settings are correctly configured."
       else
         echo "🚨 Final Check: ❌ One or more policy settings are incorrect."
       fi

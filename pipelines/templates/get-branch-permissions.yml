@@ -8,14 +8,12 @@ parameters:
 
 steps:
   - bash: |
-      echo "Default branch for repository '${{ parameters.repository }}': $(targetBranch)"
-      echo "Checking permissions for repository '${{ parameters.repository }}'..."
-      
       set -euo pipefail
 
-      echo "Checking permissions for branch: $(targetBranch)"
+      echo "Checking permissions for repository '${{ parameters.repository }}', branch: $(targetBranch) ..."
 
-      NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
+      # === API Call ===
+      NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87" # Namespace ID for Git repositories
       SECURITY_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/$(targetBranch)"
       API_URL="${{ parameters.organizationUrl }}/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
@@ -28,80 +26,84 @@ steps:
         -H "Content-Type: application/json" \
         "$API_URL" || echo "000")
 
-      echo "HTTP Status: $http_status"
+      # echo "HTTP Status: $http_status"
 
       if [[ "$http_status" == "404" ]]; then
-        echo "Repository '${{ parameters.repository }}' not found in project ${{ parameters.projectName }}!"
+        echo "❌ Repository '${{ parameters.repository }}' not found in project ${{ parameters.projectName }}!"
         exit 1
       elif [[ "$http_status" != "200" ]]; then
-        echo "Failed to retrieve repository permissions. HTTP Status: $http_status"
+        echo "❌ Failed to retrieve repository permissions. HTTP Status: $http_status"
         exit 1
       fi
 
       # echo "API Response: $(jq . response.json)"
-      
-      deny_value=$(jq -r '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
-      deny_value=${deny_value:-0}
-      # echo "Deny Value: $deny_value"
-
-      # Bit values for each permission
+    
+      # === Bit values for each permission ===
       force_push_bit=16
       edit_policies_bit=4096
       bypass_pull_request_policies_bit=1024
       bypass_pushing_policies_bit=2048
 
-      # Initialize flags
+      # === Initialize flags ===
       deny_force_push=false
       deny_edit_policies=false
       deny_bypass_pr=false
       deny_bypass_push=false
 
+      # === Extract permissions from API response ===
+      deny_value=$(jq -r '.value[0].acesDictionary | .[] | select(.displayName? // "" | contains("Project Valid Users")) | .deny' response.json)
+      deny_value=${deny_value:-0}
+      # echo "Deny Value: $deny_value"
+
       # Force Push
       if (( (deny_value & force_push_bit) == force_push_bit )); then
-        echo "Force Push permission is denied to all users."
+        echo "✅ Force Push permission is denied to all users."
         deny_force_push=true
       else
-        echo "Force Push permission is NOT explicitly denied to all users."
+        echo "❌ Force Push permission is NOT explicitly denied to all users."
       fi
 
       # Edit Policies
       if (( (deny_value & edit_policies_bit) == edit_policies_bit )); then
-        echo "Edit Policies permission is denied to all users."
+        echo "✅ Edit Policies permission is denied to all users."
         deny_edit_policies=true
       else
-        echo "Edit Policies permission is NOT explicitly denied to all users."
+        echo "❌ Edit Policies permission is NOT explicitly denied to all users."
       fi
 
       # Bypass Policies when completing PR
       if (( (deny_value & bypass_pull_request_policies_bit) == bypass_pull_request_policies_bit )); then
-        echo "Bypass PR Policies is denied to all users."
+        echo "✅ Bypass PR Policies is denied to all users."
         deny_bypass_pr=true
       else
-        echo "Bypass PR Policies is NOT explicitly denied to all users."
+        echo "❌ Bypass PR Policies is NOT explicitly denied to all users."
       fi
 
       # Bypass Policies when pushing
       if (( (deny_value & bypass_pushing_policies_bit) == bypass_pushing_policies_bit )); then
-        echo "Bypass Push Policies is denied to all users."
+        echo "✅ Bypass Push Policies is denied to all users."
         deny_bypass_push=true
       else
-        echo "Bypass Push Policies is NOT explicitly denied to all users."
+        echo "❌ Bypass Push Policies is NOT explicitly denied to all users."
       fi
 
-      # Final result (you can reuse these later)
-      echo "Final Deny Booleans:"
-      echo "deny_force_push: $deny_force_push"
-      echo "deny_edit_policies: $deny_edit_policies"
-      echo "deny_bypass_pr: $deny_bypass_pr"
-      echo "deny_bypass_push: $deny_bypass_push"
+      # === Display Final result ===
+      echo "+----------------------------------------------+"
+      if [[ "$deny_force_push" == "true" && \
+            "$deny_edit_policies" == "true" && \
+            "$deny_bypass_pr" == "true" && \
+            "$deny_bypass_push" == "true" ]]; then
+        echo "✅ All required branch permissions are properly denied."
+      else
+        echo "❌ One or more required branch permissions are NOT properly denied."
+      fi
+      echo "+----------------------------------------------+"
 
-      echo "Permissions check completed successfully."
-
-      # Export values
-      echo "##vso[task.setvariable variable=denyForcePush]$deny_force_push"
-      echo "##vso[task.setvariable variable=denyEditPolicies]$deny_edit_policies"
-      echo "##vso[task.setvariable variable=denyBypassPR]$deny_bypass_pr"
-      echo "##vso[task.setvariable variable=denyBypassPush]$deny_bypass_push"
+      # === Export values ===
+      echo "##vso[task.setvariable variable=denyForcePushPermission]$deny_force_push"
+      echo "##vso[task.setvariable variable=denyEditPoliciesPermission]$deny_edit_policies"
+      echo "##vso[task.setvariable variable=denyBypassPRPermission]$deny_bypass_pr"
+      echo "##vso[task.setvariable variable=denyBypassPushPermission]$deny_bypass_push"
     displayName: 'Check Repository Permissions'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
