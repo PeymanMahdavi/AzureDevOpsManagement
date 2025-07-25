@@ -10,7 +10,7 @@ steps:
   - bash: |
       set -euo pipefail
 
-      echo "Checking permissions for repository '${{ parameters.repository }}', branch: $(targetBranch) ..."
+      echo "Checking permissions for repository '${{ parameters.repository }}' on branch: $(targetBranch) ..."
 
       # === API Call ===
       NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87" # Namespace ID for Git repositories
