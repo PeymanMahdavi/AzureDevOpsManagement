@@ -42,7 +42,7 @@ jobs:
   dependsOn: CheckDefaultBranch
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   variables:
-    targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.defaultBranch'] ]
+    targetBranch: $[ dependencies.CheckDefaultBranch.outputs['PublishDefaultBranchName.defaultBranch'] ]
   steps:
   - checkout: none
   - template: get-branch-policies.yml
