@@ -58,7 +58,7 @@ steps:
         -H "Content-Type: application/json" \
         "$SET_PERMISSIONS_API_URL" \
         -d "{
-          \"value\": [
+          \"Value\": [
             {
               \"descriptor\": \"$PROJECT_VALID_USERS_DESCRIPTOR\",
               \"allow\": 0,
