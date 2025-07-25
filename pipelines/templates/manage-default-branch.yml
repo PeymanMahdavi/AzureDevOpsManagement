@@ -39,7 +39,7 @@ jobs:
 
 - job: CheckPolicies
   displayName: 'Check Policies'
-  dependsOn: CheckPermissions
+  dependsOn: CheckDefaultBranch
   condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
   variables:
     targetBranch: $[ dependencies.CheckDefaultBranch.outputs['setDefaultBranch.defaultBranch'] ]
