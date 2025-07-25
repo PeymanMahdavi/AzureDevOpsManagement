@@ -30,7 +30,43 @@ steps:
 
       echo "Setting permissions and policies for repository: ${{ parameters.repository }} on branch: ${{ parameters.targetBranch }}"
 
-      
+      # === API Call - Find valid users ===
+      org_name=$(echo "${{ parameters.organizationUrl }}" | awk -F '/' '{print $(NF-1)}')
+      PROJECT_VALID_USERS_DESCRIPTOR=$(curl -sL -u ":$(System.AccessToken)" "https://vssps.dev.azure.com/$org_name/_apis/graph/descriptors/$(System.TeamProjectId)" | jq -r '.value')
+      echo "Project Valid Users Descriptor: $PROJECT_VALID_USERS_DESCRIPTOR"
+
+      if [[ -z "$PROJECT_VALID_USERS_DESCRIPTOR" || "$PROJECT_VALID_USERS_DESCRIPTOR" == "null" ]]; then
+        echo "❌ ERROR: Failed to find Project Valid Users group descriptor."
+        exit 1
+      fi
+
+      # === Bit values for each permission ===
+      force_push_bit=16
+      edit_policies_bit=4096
+      bypass_pull_request_policies_bit=1024
+      bypass_pushing_policies_bit=2048
+      combined_permissions=$(( force_push_bit | edit_policies_bit | bypass_pull_request_policies_bit | bypass_pushing_policies_bit ))
+
+      GIT_NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87"
+      BRANCH_TOKEN="repoV2/$(System.TeamProjectId)/$(Build.Repository.ID)/refs/heads/${{ parameters.targetBranch }}"
+
+      # === API Call - Set permissions ===
+      curl -sL \
+        -X POST \
+        -u ":${PAT}" \
+        --header "Content-Type: application/json" \
+        "${{ parameters.organizationUrl }}/_apis/accesscontrollists/$GIT_NAMESPACE_ID?api-version=7.1-preview.1" \
+        -d '{
+          "value": [
+            {
+              "descriptor": "'"$PROJECT_VALID_USERS_DESCRIPTOR"'",
+              "allow": 0,
+              "deny": '"$combined_permissions"'
+            }
+          ],
+          "token": "'"$BRANCH_TOKEN"'",
+          "merge": true
+        }'
     displayName: 'Set Repository permissions & policies'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
