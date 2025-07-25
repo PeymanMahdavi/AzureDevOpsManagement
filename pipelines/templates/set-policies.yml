@@ -11,7 +11,7 @@ steps:
       # I know there is a problem with the securoty token, ans i may fix it with a PAT, but I am running out of time.
       set -euo pipefail
 
-      if [[ "$isPolicyEnabled" == "true" && "$resetApproveVotesPolicy" == "true" && "$resetRejectVotesPolicy" == "false" ]] && [[ "$minimumApproversPolicy" -eq 2 ]]; then
+      if [[ "$(isPolicyEnabled)" == "true" && "$(resetApproveVotesPolicy)" == "true" && "$(resetRejectVotesPolicy)" == "false" ]] && [[ "$(minimumApproversPolicy)" -eq 2 ]]; then
         echo "✅ All required branch policies are already set. Skipping policy update."
         exit 0
       fi

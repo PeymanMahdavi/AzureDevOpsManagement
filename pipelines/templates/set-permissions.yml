@@ -11,7 +11,7 @@ steps:
       # I know there is a problem with the securoty token, ans i may fix it with a PAT, but I am running out of time.
       set -euo pipefail
 
-      if [[ "$denyForcePushPermission" == "true" && "$denyEditPoliciesPermission" == "true" && "$denyBypassPRPermission" == "true" && "$denyBypassPushPermission" == "true" ]]; then
+      if [[ "$(denyForcePushPermission)" == "true" && "$(denyEditPoliciesPermission)" == "true" && "$(denyBypassPRPermission)" == "true" && "$(denyBypassPushPermission)" == "true" ]]; then
         echo "✅ All required permissions are already denied. Skipping API call."
         exit 0
       fi
