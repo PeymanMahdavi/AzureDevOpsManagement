@@ -47,11 +47,11 @@ steps:
       reset_approve_votes=$(echo "$filtered_policies" | jq '.settings.resetOnSourcePush // empty')
       reset_reject_votes=$(echo "$filtered_policies" | jq '.settings.resetRejectionsOnSourcePush // empty')
 
-      echo "isEnabled: ${is_enable}"
-      echo "isBlocking: ${is_blocking}"
-      echo "Minimum approvers: ${min_approvers}"
-      echo "Reset approve votes on source push: ${reset_approve_votes}"
-      echo "Reset reject votes on source push: ${reset_reject_votes}"
+      echo "isEnabled: ${is_enable}" [[ "$is_enable" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "isBlocking: ${is_blocking}" [[ "$is_blocking" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Minimum approvers: ${min_approvers}" [[ "$min_approvers" == "2" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Reset approve votes on source push: ${reset_approve_votes}" [[ "$reset_approve_votes" == "true" ]] && echo "✅ Match" || echo "❌ No match"
+      echo "Reset reject votes on source push: ${reset_reject_votes}" [[ "$reset_reject_votes" == "false" ]] && echo "✅ Match" || echo "❌ No match"
 
       
     displayName: 'Check Repository policies'
