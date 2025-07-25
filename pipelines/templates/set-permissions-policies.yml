@@ -33,7 +33,7 @@ steps:
       bypass_pushing_policies_bit=2048
       combined_permissions=$(( force_push_bit | edit_policies_bit | bypass_pull_request_policies_bit | bypass_pushing_policies_bit ))
 
-      jq '.value[0].acesDictionary |= with_entries(.value.deny = $combined_permissions)' response.json > updated.json
+      jq --argjson combined_permissions "$combined_permissions" '.value[0].acesDictionary |= with_entries(.value.deny = $combined_permissions)' response.json > updated.json
 
       echo "API Response: $(jq . response.json)"
       echo "API Response: $(jq . updated.json)"
