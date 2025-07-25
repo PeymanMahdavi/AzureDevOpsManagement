@@ -10,7 +10,7 @@ steps:
   - bash: |
       set -euo pipefail
 
-      echo "Checking permissions for repository '${{ parameters.repository }}', branch: $(targetBranch) ..."
+      echo "Checking permissions for repository '${{ parameters.repository }}' on branch: $(targetBranch) ..."
 
       # === API Call ===
       NAMESPACE_ID="2e9eb7ed-3c0a-47d4-87c1-0ffdd275fd87" # Namespace ID for Git repositories
@@ -18,7 +18,7 @@ steps:
       API_URL="${{ parameters.organizationUrl }}/_apis/accesscontrollists/$NAMESPACE_ID?token=$SECURITY_TOKEN&api-version=7.1-preview.1&includeExtendedInfo=true"
 
       # echo "API URL: $API_URL"
-      # echo "Security Token: $SECURITY_TOKEN"
+      echo "Security Token: $SECURITY_TOKEN"
       # echo "Namespace ID: $NAMESPACE_ID"
 
       http_status=$(curl -sS -o response.json -w "%{http_code}" \

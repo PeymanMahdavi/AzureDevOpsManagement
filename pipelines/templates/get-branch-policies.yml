@@ -10,7 +10,7 @@ steps:
   - bash: |
       set -euo pipefail
 
-      echo "Checking policies for repository '${{ parameters.repository }}', branch: $(targetBranch) ..."
+      echo "Checking policies for repository '${{ parameters.repository }}' on branch: $(targetBranch) ..."
       
       # === API Call ===
       API_URL="${{ parameters.organizationUrl }}$(System.TeamProjectId)/_apis/policy/configurations?api-version=7.1-preview.1"
