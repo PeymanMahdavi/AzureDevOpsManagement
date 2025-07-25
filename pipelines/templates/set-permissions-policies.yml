@@ -36,6 +36,21 @@ steps:
       echo "API URL: $SET_PERMISSIONS_API_URL"
       echo "Security Token: $BRANCH_TOKEN"
 
+      echo "Full payload:"
+      cat <<EOF
+      {
+        "value": [
+          {
+            "descriptor": "$PROJECT_VALID_USERS_DESCRIPTOR",
+            "allow": 0,
+            "deny": $combined_permissions
+          }
+        ],
+        "token": "$BRANCH_TOKEN",
+        "merge": true
+      }
+      EOF
+
       # === API Call - Set permissions ===
       curl -sL \
         -X POST \
