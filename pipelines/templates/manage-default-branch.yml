@@ -76,7 +76,12 @@ jobs:
     resetRejectVotesPolicy: $[ dependencies.CheckPolicies.outputs['SetBranchPliciesStatus.resetRejectVotesPolicy'] ]
   steps:
   - checkout: none
-  - template: set-permissions-policies.yml
+  - template: set-permissions.yml
+    parameters:
+      repository: ${{ parameters.repository }}
+      organizationUrl: $(System.CollectionUri)
+      projectName: $(System.TeamProject)
+  - template: set-policies.yml
     parameters:
       repository: ${{ parameters.repository }}
       organizationUrl: $(System.CollectionUri)

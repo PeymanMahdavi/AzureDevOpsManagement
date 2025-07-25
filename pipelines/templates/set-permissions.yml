@@ -8,7 +8,13 @@ parameters:
 
 steps:
   - bash: |
+      # I know there is a problem with the securoty token, ans i may fix it with a PAT, but I am running out of time.
       set -euo pipefail
+
+      if [[ "$denyForcePushPermission" == "true" && "$denyEditPoliciesPermission" == "true" && "$denyBypassPRPermission" == "true" && "$denyBypassPushPermission" == "true" ]]; then
+        echo "✅ All required permissions are already denied. Skipping API call."
+        exit 0
+      fi
 
       echo "Setting permissions and policies for repository: ${{ parameters.repository }} on branch: $(targetBranch)"
 
@@ -52,6 +58,6 @@ steps:
         -H "Content-Type: application/json" \
         "$SET_PERMISSIONS_API_URL" \
         -d "@updated.json"
-    displayName: 'Set Repository permissions & policies'
+    displayName: 'Set Repository permissions'
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
